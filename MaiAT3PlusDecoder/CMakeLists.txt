@@ -1,5 +1,5 @@
 # vim:noexpandtab:
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 3.5)
 project(MaiAT3)
 
 if(ANDROID)
@@ -200,7 +200,7 @@ add_library(base STATIC
 	src/base/MaiString.cc
 	src/base/MaiThread.cc
 	src/base/Mai_Sleep.cc
-	src/base/Mai_Mem.cc
+	src/base/Mai_mem.cc
 	src/base/Unicode.cc)
 
 add_library(at3plusdecoder SHARED

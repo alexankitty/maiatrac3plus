@@ -13,3 +13,7 @@ x64
 *.suo
 libs
 obj
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+Makefile
