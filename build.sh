@@ -1,29 +1,50 @@
 #!/bin/bash
 set -e
 
+if [ -d "./lib" ]; then
+    rm -rf ./lib
+fi
+
+cd ./MaiAT3PlusDecoder
+
+if [ -d "./build" ]; then
+    rm -rf ./build
+fi
+
+mkdir -p ../lib
+
 linux(){
-    cmake -S ./MaiAT3PlusDecoder -B ./MaiAT3PlusDecoder/build -DCMAKE_BUILD_TYPE=Release
-    cmake --build ./MaiAT3PlusDecoder/build --config Release
+    cmake . -B ./build -DCMAKE_BUILD_TYPE=Release
+    make -C ./build -j$(nproc)
+    cp ./build/lib/libat3plusdecoder.so ../lib/
 }
 
 windows(){
-    CXX=x86_64-w64-mingw32-g++
-    CC=x86_64-w64-mingw32-gcc
-    cmake -S ./MaiAT3PlusDecoder -B ./MaiAT3PlusDecoder/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw-w64-x86_64.cmake
-    cmake --build ./MaiAT3PlusDecoder/build --config Release
+    export CXX=x86_64-w64-mingw32-g++
+    export CC=x86_64-w64-mingw32-gcc
+    TOOLCHAIN_FILE="/usr/share/mingw/toolchain-x86_64-w64-mingw32.cmake"
+    if [ -f "$TOOLCHAIN_FILE" ]; then
+        cmake . -B ./build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_FILE
+    else
+        echo "Warning: Toolchain file not found at $TOOLCHAIN_FILE. Using CC/CXX env vars only."
+        cmake . -B ./build -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=Windows
+    fi
+    make -C ./build -j$(nproc)
+    cp ./build/libat3plusdecoder.dll ../lib/
 }
 
 macos(){
-    cmake -S ./MaiAT3PlusDecoder -B ./MaiAT3PlusDecoder/build -DCMAKE_BUILD_TYPE=Release
-    cmake --build ./MaiAT3PlusDecoder/build --config Release
+    cmake . -B ./build -DCMAKE_BUILD_TYPE=Release
+    make -C ./build -j$(sysctl -n hw.ncpu)
+    cp ./build/lib/libat3plusdecoder.dylib ../lib/
 }
 
-if([ $# -eq 0 ]); then
+if [ $# -eq 0 ]; then
     echo "Usage: $0 [linux|windows|macos]"
     exit 1
 fi
 
-for target in $@; do
+for target in "$@"; do
     case $target in
         linux)
             linux ;;
